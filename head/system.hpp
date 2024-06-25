@@ -1,5 +1,5 @@
 #pragma once
-
+#include <mimalloc-2.1/mimalloc-override.h>
 #include <czmq.h>
 #include <chrono>
 #include <thread>
