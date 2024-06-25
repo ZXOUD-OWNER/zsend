@@ -29,7 +29,7 @@ https://www.zxoud.com/zsend
 To install ZSEND, follow these steps:
 
 Clone the repository:
-git clone https://github.com/ZXOUD/zio.git
+git clone https://github.com/ZXOUD-OWNER/zsend.git
 ## Contributing
 We welcome contributions in all forms! If you have any suggestions, bug reports, or would like to contribute code, please feel free to submit an issue or pull request.
 
