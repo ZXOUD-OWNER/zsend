@@ -19,18 +19,21 @@
 #include <iostream>
 // #define WORKER_READY "\001"
 
-class NonCopyable
+namespace ZMQSend
 {
-protected:
-    NonCopyable() = default;  // Allow default constructor
-    ~NonCopyable() = default; // Allow default destructor
+    class NonCopyable
+    {
+    protected:
+        NonCopyable() = default;  // Allow default constructor
+        ~NonCopyable() = default; // Allow default destructor
 
-    NonCopyable(const NonCopyable &) = delete;            // Disallow copy constructor
-    NonCopyable &operator=(const NonCopyable &) = delete; // Disallow assignment operator
+        NonCopyable(const NonCopyable &) = delete;            // Disallow copy constructor
+        NonCopyable &operator=(const NonCopyable &) = delete; // Disallow assignment operator
 
-    NonCopyable(NonCopyable &&) = delete;            // Disallow move constructor
-    NonCopyable &operator=(NonCopyable &&) = delete; // Disallow move assignment operator
-};
+        NonCopyable(NonCopyable &&) = delete;            // Disallow move constructor
+        NonCopyable &operator=(NonCopyable &&) = delete; // Disallow move assignment operator
+    };
+}
 
 // struct Log_MQ : public NonCopyable
 // {
@@ -71,7 +74,7 @@ typedef struct
     zlist_t *workers;  //  List of ready workers
 } lbbroker_t;
 
-struct zloopWrap : public NonCopyable
+struct zloopWrap : public ZMQSend::NonCopyable
 {
     zloop_t *reactor = nullptr;
     inline ~zloopWrap()
@@ -114,7 +117,7 @@ namespace CUitl
     }
 }
 
-struct zsockWrap : NonCopyable
+struct zsockWrap : ZMQSend::NonCopyable
 {
     zsock_t *sock = nullptr;
     inline ~zsockWrap()
@@ -127,7 +130,7 @@ struct zsockWrap : NonCopyable
     }
 };
 
-struct zpollerWrap : NonCopyable
+struct zpollerWrap : ZMQSend::NonCopyable
 {
     zpoller_t *zpoller = nullptr;
     inline ~zpollerWrap()
@@ -140,7 +143,7 @@ struct zpollerWrap : NonCopyable
     }
 };
 
-struct zactorWrap : NonCopyable
+struct zactorWrap : ZMQSend::NonCopyable
 {
     zactor_t *zact = nullptr;
     inline ~zactorWrap()
@@ -153,7 +156,7 @@ struct zactorWrap : NonCopyable
     }
 };
 
-class zmqSend : NonCopyable
+class zmqSend : ZMQSend::NonCopyable
 {
 private:
     zsockWrap _Ssock, _Rsock;

@@ -2,7 +2,7 @@
 
 #include "zmqSend.hpp"
 
-class zmqSenderPool : NonCopyable
+class zmqSenderPool : ZMQSend::NonCopyable
 {
 private:
     std::vector<zmqSend> _pool;
