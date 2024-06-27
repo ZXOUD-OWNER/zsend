@@ -1,5 +1,4 @@
 #pragma once
-#include <mimalloc-2.1/mimalloc-override.h>
 #include <czmq.h>
 #include <chrono>
 #include <thread>
@@ -19,6 +18,8 @@
 #include <random>
 #include <iostream>
 // #define WORKER_READY "\001"
+
+#include <mimalloc-2.1/mimalloc-override.h>
 
 class NonCopyable
 {
