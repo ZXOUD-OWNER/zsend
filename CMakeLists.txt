@@ -39,6 +39,9 @@ add_compiler_flag_if_supported("-Wunused")
 add_compiler_flag_if_supported("-Wvla")
 add_compiler_flag_if_supported("-Wextra-semi")
 
+
+# set(CMAKE_CXX_FLAGS, "${CMAKE_CXX_FLAGS} -fcoroutines")
+
 add_compile_options(
     $<$<CONFIG:DEBUG>:-Wall>
     $<$<CONFIG:DEBUG>:-Wextra>
@@ -47,6 +50,8 @@ add_compile_options(
     $<$<CONFIG:RELEASE>:-pipe>
     $<$<CONFIG:RELEASE>:-DNDEBUG>
     $<$<CONFIG:RELEASE>:-flto=auto>
+    $<$<CONFIG:DEBUG>:-fcoroutines>
+    $<$<CONFIG:RELEASE>:-fcoroutines>
 )
 
 
