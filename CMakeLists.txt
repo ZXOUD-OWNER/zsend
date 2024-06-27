@@ -37,5 +37,5 @@ INCLUDE_DIRECTORIES("/usr/local/include/mimalloc-2.1")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/head)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SOURCES)
 
-add_executable(zSend ${SOURCES})
+add_library(zSend SHARED ${SOURCES})
 target_link_libraries(zSend pthread PkgConfig::zmq glog::glog PkgConfig::redis -lmimalloc -lunwind -lunwind-x86_64)
