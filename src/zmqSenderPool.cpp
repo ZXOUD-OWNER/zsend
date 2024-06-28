@@ -1,25 +1,25 @@
-#include "zmqSenderPool.hpp"
+#include "ZmqSenderPool.hpp"
 
-zmqSenderPool::zmqSenderPool(std::string_view connectStr)
+ZmqSenderPool::ZmqSenderPool(std::string_view connectStr)
 {
     _zmqConnectStr = connectStr;
 }
 
-zmqSenderPool::~zmqSenderPool()
+ZmqSenderPool::~ZmqSenderPool()
 {
 }
 
-void zmqSenderPool::SetZmqClientNum(int num)
+void ZmqSenderPool::setZmqClientNum(int num)
 {
     _num = num;
 }
 
-int zmqSenderPool::GetZMQNum()
+int ZmqSenderPool::getZmqNum()
 {
     return _num;
 }
 
-bool zmqSenderPool::Create()
+bool ZmqSenderPool::create()
 {
     if (_num == -1)
     {
@@ -40,8 +40,7 @@ bool zmqSenderPool::Create()
     return true;
 }
 
-// when occur err,return -1
-std::string zmqSenderPool::Send(const std::string &msg)
+std::string ZmqSenderPool::send(const std::string &msg)
 {
     std::string res("-1");
     if (_num == -1)
@@ -50,9 +49,9 @@ std::string zmqSenderPool::Send(const std::string &msg)
         return res;
     }
 
-    static std::random_device rd;                               // 真随机数生成器（但有些编译器没有实现），用于生成伪随机数生成器的种子
-    std::mt19937 eng(rd());                                     // 使用梅森旋转法作为伪随机数生成器，随机程度较好
-    static std::uniform_int_distribution<int> dis(0, _num - 1); // 10到20之间的整数均匀分布
+    static std::random_device rd;                               // True random number generator (not implemented in all compilers) for seeding pseudo-random number generators
+    std::mt19937 eng(rd());                                     // Using the Mersenne Twister Method as a pseudo-random number generator with good randomness
+    static std::uniform_int_distribution<int> dis(0, _num - 1); // Uniform integer distribution from 10 to 20
     int pos = -1;
     while (true)
     {
@@ -66,7 +65,7 @@ std::string zmqSenderPool::Send(const std::string &msg)
             continue;
         }
     }
-    res = _pool[pos].Send(msg);
+    res = _pool[pos].send(msg);
     _poolMutex[pos].unlock();
     return res;
 }
