@@ -59,12 +59,11 @@ add_compile_options(
 # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto=auto")
 set(ENV{PKG_CONFIG_PATH} "/usr/local/lib/pkgconfig/")
-find_package (glog 0.7.0 REQUIRED)
+find_package (glog REQUIRED VERSION 0.7.0 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(unwind REQUIRED IMPORTED_TARGET "libunwind>=1.8.1")
 pkg_check_modules(zmq REQUIRED IMPORTED_TARGET "libzmq>=4.3.5" "libczmq>=4.2.1")
 pkg_check_modules(redis REQUIRED IMPORTED_TARGET "hiredis>=1.2.0")
-
 # INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/3rdPart/libyuv/include)
 # #INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/3rdPart/nvencSDK/include)
 # INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/3rdPart/decklinkSDK/include)
