@@ -1,8 +1,8 @@
-#include "zmqSend.hpp"
+#include "ZmqSend.hpp"
 
-// zmqMiddle zmqSend::_middle;
+// zmqMiddle ZmqSend::_middle;
 
-zmqSend::zmqSend(const nlohmann::json &value)
+ZmqSend::ZmqSend(const nlohmann::json &value)
 {
     if (value.find("FrontendPort") == value.end() || value.find("FrontendIP") == value.end() || value.find("ZMQIONumber") == value.end() || value.find("ZMQ_QUEUELEN_SEND") == value.end() || value.find("ZMQ_QUEUELEN_RECV") == value.end())
     {
@@ -24,64 +24,75 @@ zmqSend::zmqSend(const nlohmann::json &value)
     start();
 }
 
-zmqSend::zmqSend(std::string_view connectStr)
+ZmqSend::ZmqSend(std::string_view connectStr)
 {
     _routerIPAndPort = "tcp://";
     _routerIPAndPort += connectStr;
 }
 
-zmqSend::zmqSend(std::string cconnectStro)
+ZmqSend::ZmqSend(std::string cconnectStro)
 {
     _routerIPAndPort = "tcp://";
     _routerIPAndPort += cconnectStro;
 }
 
-zmqSend::zmqSend(zmqSend &&temp)
+/**
+ * @description: Move constructor: Be mindful of resource ownership transfer
+ * @param {ZmqSend} &
+ * @return {*}
+ */
+ZmqSend::ZmqSend(ZmqSend &&temp)
 {
-    _Ssock.sock = temp._Ssock.sock;
-    temp._Ssock.sock = nullptr; // We cannot allow the rvalue object to release these socket resources when it is destructed, because it is move semantics
+    _ssock.sock = temp._ssock.sock;
+    temp._ssock.sock = nullptr; // We cannot allow the rvalue object to release these socket resources when it is destructed, because it is move semantics
 
-    _Rsock.sock = temp._Rsock.sock;
-    temp._Rsock.sock = nullptr;
+    _rsock.sock = temp._rsock.sock;
+    temp._rsock.sock = nullptr;
 
     _routerIPAndPort = temp._routerIPAndPort;
 
     _zacWrap.zact = temp._zacWrap.zact;
     temp._zacWrap.zact = nullptr;
 
-    _Zpoller.zpoller = temp._Zpoller.zpoller;
-    temp._Zpoller.zpoller = nullptr;
+    _zpoller.zpoller = temp._zpoller.zpoller;
+    temp._zpoller.zpoller = nullptr;
 }
 
-zmqSend::~zmqSend()
+ZmqSend::~ZmqSend()
 {
 }
 
-void zmqSend::clientWorker(zsock_t *pipe, void *args)
+/**
+ * @description:The worker thread responsible for adding requests to the zmq send queue and retrieving from the zmq receive queue.
+ * @param {zsock_t} *pipe Pipe descriptor for communication (receiving and sending) with zmq worker threads
+ * @param {void} *args Custom incoming parameters, this function requires passing the this pointer of the class
+ * @return {*}
+ */
+void ZmqSend::clientWorker(zsock_t *pipe, void *args)
 {
-    auto selfPtr = static_cast<zmqSend *>(args);
+    auto selfPtr = static_cast<ZmqSend *>(args);
     auto &self = *selfPtr;
     zsock_signal(pipe, 0);
-    self._Ssock.sock = zsock_new_req(self._routerIPAndPort.c_str());
+    self._ssock.sock = zsock_new_req(self._routerIPAndPort.c_str());
 
-    // int timeout = 1000; // 超时时间为 1000 毫秒
-    // zmq_setsockopt(self._Ssock.sock, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
-    if (self._Ssock.sock == nullptr)
+    // int timeout = 1000; // timeout is 1000 ms
+    // zmq_setsockopt(self._ssock.sock, ZMQ_RCVTIMEO, &timeout, sizeof(timeout));
+    if (self._ssock.sock == nullptr)
     {
         LOG(ERROR) << "zsock_new_req err!";
     }
 
-    self._Zpoller.zpoller = zpoller_new(pipe, self._Ssock.sock, NULL);
-    zpoller_set_nonstop(self._Zpoller.zpoller, true);
+    self._zpoller.zpoller = zpoller_new(pipe, self._ssock.sock, NULL);
+    zpoller_set_nonstop(self._zpoller.zpoller, true);
 
     std::unique_ptr<char[]> req;
     std::unique_ptr<char[]> reply;
 
-    //  Send request, get reply
+    //  send request, get reply
     while (true)
     {
         DLOG(ERROR) << "before zpoller_wait";
-        zsock_t *ready = static_cast<zsock_t *>(zpoller_wait(self._Zpoller.zpoller, -1));
+        zsock_t *ready = static_cast<zsock_t *>(zpoller_wait(self._zpoller.zpoller, -1));
         if (ready == nullptr)
         {
             continue; // Interrupted
@@ -90,28 +101,28 @@ void zmqSend::clientWorker(zsock_t *pipe, void *args)
         {
             req.reset(zstr_recv(pipe));
             DLOG(ERROR) << "after req.reset(zstr_recv(pipe));";
-            auto res = zstr_send(self._Ssock.sock, req.get());
+            auto res = zstr_send(self._ssock.sock, req.get());
             if (res == -1)
             {
-                LOG(ERROR) << "zmsg_send err! err is " << strerror(errno) << " function order :" << CUitl::Print_trace();
+                LOG(ERROR) << "zmsg_send err! err is " << strerror(errno) << " function order :" << cutil::printTrace();
             }
             continue; // Shutdown
         }
         else
-            assert(ready == self._Ssock.sock); // Data Available
+            assert(ready == self._ssock.sock); // Data Available
 
-        DLOG(ERROR) << "zstr_recv(self._Ssock.sock)";
+        DLOG(ERROR) << "zstr_recv(self._ssock.sock)";
 
-        reply.reset(zstr_recv(self._Ssock.sock)); // If a response is received after 2 seconds, it’s not due to the worker node going offline causing the message routing to fail and not receiving a response,
+        reply.reset(zstr_recv(self._ssock.sock)); // If a response is received after 2 seconds, it’s not due to the worker node going offline causing the message routing to fail and not receiving a response,
         // but due to network congestion causing a timeout.
         // This could lead to a problem where the correct response is never received. Therefore, there is a lack of a discard logic here.
         // A sequence number should be designed, and messages that do not match should be directly discarded. NEED CHANGE!!!!!!!!!!!!!!
         auto res = zstr_send(pipe, reply.get());
-        DLOG(ERROR) << "after zstr_recv(self._Ssock.sock)";
+        DLOG(ERROR) << "after zstr_recv(self._ssock.sock)";
 
         if (res == -1)
         {
-            LOG(ERROR) << "zmsg_send err! err is " << strerror(errno) << " function order :" << CUitl::Print_trace();
+            LOG(ERROR) << "zmsg_send err! err is " << strerror(errno) << " function order :" << cutil::printTrace();
         }
         if (!reply)
             break;
@@ -120,17 +131,26 @@ void zmqSend::clientWorker(zsock_t *pipe, void *args)
     }
 }
 
-void zmqSend::start()
+void ZmqSend::start()
 {
     _zacWrap.zact = zactor_new(clientWorker, this);
 }
 
-const zactorWrap &zmqSend::GetZactora()
+/**
+ * @description: Obtaining the socket for communication with zmq worker threads
+ * @return {*}
+ */
+const ZactorWrap &ZmqSend::getZactora()
 {
     return _zacWrap;
 }
 
-std::string zmqSend::Send(const std::string &content)
+/**
+ * @description: Sending specified content using the ZmqSend function on a zmq socket
+ * @param {string} &content
+ * @return {*}
+ */
+std::string ZmqSend::send(const std::string &content)
 {
     std::string res("-1");
     if (_zacWrap.zact == nullptr)
@@ -141,7 +161,7 @@ std::string zmqSend::Send(const std::string &content)
     auto ret = zstr_send(_zacWrap.zact, content.c_str());
     if (ret == -1)
     {
-        LOG(ERROR) << "zmsg_send err! err is " << strerror(errno) << " function order :" << CUitl::Print_trace();
+        LOG(ERROR) << "zmsg_send err! err is " << strerror(errno) << " function order :" << cutil::printTrace();
         return res;
     }
     std::unique_ptr<char[]> resPtr;
@@ -151,7 +171,7 @@ std::string zmqSend::Send(const std::string &content)
     res = std::string(resPtr.get());
     if (res == "-1")
     {
-        LOG(ERROR) << "zstr_recv err! err is " << strerror(errno) << " function order :" << CUitl::Print_trace();
+        LOG(ERROR) << "zstr_recv err! err is " << strerror(errno) << " function order :" << cutil::printTrace();
         return res;
     }
     return res;

@@ -41,10 +41,10 @@ typedef struct
     zlist_t *workers;  //  List of ready workers
 } lbbroker_t;
 
-struct zloopWrap : public NonCopyable
+struct ZloopWrap : public NonCopyable
 {
     zloop_t *reactor = nullptr;
-    inline ~zloopWrap()
+    inline ~ZloopWrap()
     {
         if (reactor == nullptr)
         {
@@ -54,9 +54,9 @@ struct zloopWrap : public NonCopyable
     }
 };
 
-namespace CUitl
+namespace cutil
 {
-    inline std::string Print_trace()
+    inline std::string printTrace()
     {
         unw_cursor_t cursor;
         unw_context_t context;

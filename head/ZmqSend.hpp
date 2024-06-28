@@ -1,3 +1,12 @@
+/*
+ * This file is part of the software and assets of HK ZXOUD LIMITED.
+ * @copyright (c) HK ZXOUD LIMITED https://www.zxoud.com
+ * Author: yushou-cell(email:2354739167@qq.com)
+ * create: 2024-06-25
+ * FilePath: /zsend/head/ZmqSend.hpp
+ * Description: Some C++ wrappers for zmq
+ */
+
 #pragma once
 #include <czmq.h>
 #include <chrono>
@@ -20,7 +29,7 @@
 #include <coroutine>
 // #define WORKER_READY "\001"
 
-namespace ZMQSend
+namespace zSend
 {
     class NonCopyable
     {
@@ -75,10 +84,10 @@ typedef struct
     zlist_t *workers;  //  List of ready workers
 } lbbroker_t;
 
-struct zloopWrap : public ZMQSend::NonCopyable
+struct ZloopWrap : public zSend::NonCopyable
 {
     zloop_t *reactor = nullptr;
-    inline ~zloopWrap()
+    inline ~ZloopWrap()
     {
         if (reactor == nullptr)
         {
@@ -88,9 +97,9 @@ struct zloopWrap : public ZMQSend::NonCopyable
     }
 };
 
-namespace CUitl
+namespace cutil
 {
-    inline std::string Print_trace()
+    inline std::string printTrace()
     {
         unw_cursor_t cursor;
         unw_context_t context;
@@ -118,10 +127,10 @@ namespace CUitl
     }
 }
 
-struct zsockWrap : ZMQSend::NonCopyable
+struct ZsockWrap : zSend::NonCopyable
 {
     zsock_t *sock = nullptr;
-    inline ~zsockWrap()
+    inline ~ZsockWrap()
     {
         if (sock != nullptr)
         {
@@ -131,10 +140,10 @@ struct zsockWrap : ZMQSend::NonCopyable
     }
 };
 
-struct zpollerWrap : ZMQSend::NonCopyable
+struct ZpollerWrap : zSend::NonCopyable
 {
     zpoller_t *zpoller = nullptr;
-    inline ~zpollerWrap()
+    inline ~ZpollerWrap()
     {
         if (zpoller == nullptr)
         {
@@ -144,10 +153,10 @@ struct zpollerWrap : ZMQSend::NonCopyable
     }
 };
 
-struct zactorWrap : ZMQSend::NonCopyable
+struct ZactorWrap : zSend::NonCopyable
 {
     zactor_t *zact = nullptr;
-    inline ~zactorWrap()
+    inline ~ZactorWrap()
     {
         if (zact != nullptr)
         {
@@ -157,24 +166,24 @@ struct zactorWrap : ZMQSend::NonCopyable
     }
 };
 
-class zmqSend : ZMQSend::NonCopyable
+class ZmqSend : zSend::NonCopyable
 {
 private:
-    zsockWrap _Ssock, _Rsock;
-    zpollerWrap _Zpoller;
+    ZsockWrap _ssock, _rsock;
+    ZpollerWrap _zpoller;
     std::string _routerIPAndPort;
-    zactorWrap _zacWrap;
+    ZactorWrap _zacWrap;
     // static zmqMiddle _middle;
 
 public:
-    explicit zmqSend(const nlohmann::json &value);
-    explicit zmqSend(std::string_view connectStr);
-    explicit zmqSend(std::string cconnectStro);
-    explicit zmqSend(zmqSend &&);
+    explicit ZmqSend(const nlohmann::json &value);
+    explicit ZmqSend(std::string_view connectStr);
+    explicit ZmqSend(std::string cconnectStro);
+    explicit ZmqSend(ZmqSend &&);
     // void Init();
     static void clientWorker(zsock_t *pipe, void *args);
-    const zactorWrap &GetZactora();
-    std::string Send(const std::string &content);
+    const ZactorWrap &getZactora();
+    std::string send(const std::string &content);
     void start();
-    ~zmqSend();
+    ~ZmqSend();
 };
