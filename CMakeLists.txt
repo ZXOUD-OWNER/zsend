@@ -6,6 +6,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Check if the operating system is Arch Linux
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR NOT EXISTS "/etc/arch-release")
+    message(FATAL_ERROR "This project requires Arch Linux to build.")
+endif()
+
+
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "14.1.1")
         message(FATAL_ERROR "GCC version must be at least 14.1.1!")
@@ -42,17 +48,22 @@ add_compiler_flag_if_supported("-Wextra-semi")
 
 # set(CMAKE_CXX_FLAGS, "${CMAKE_CXX_FLAGS} -fcoroutines")
 
-add_compile_options(
-    $<$<CONFIG:DEBUG>:-Wall>
-    $<$<CONFIG:DEBUG>:-Wextra>
-    $<$<CONFIG:RELEASE>:-O2>
-    $<$<CONFIG:RELEASE>:-march=x86-64-v3>
-    $<$<CONFIG:RELEASE>:-pipe>
-    $<$<CONFIG:RELEASE>:-DNDEBUG>
-    $<$<CONFIG:RELEASE>:-flto=auto>
-    $<$<CONFIG:DEBUG>:-fcoroutines>
-    $<$<CONFIG:RELEASE>:-fcoroutines>
-)
+if(EXISTS "/etc/lsb-release")
+    add_compile_options(
+        $<$<CONFIG:DEBUG>:-Wall>
+        $<$<CONFIG:DEBUG>:-Wextra>
+        $<$<CONFIG:RELEASE>:-O2>
+        $<$<CONFIG:RELEASE>:-march=x86-64-v3>
+        $<$<CONFIG:RELEASE>:-pipe>
+        $<$<CONFIG:RELEASE>:-DNDEBUG>
+        $<$<CONFIG:RELEASE>:-flto=auto>
+        $<$<CONFIG:DEBUG>:-fcoroutines>
+        $<$<CONFIG:RELEASE>:-fcoroutines>
+    )
+endif()
+
+
+
 
 
 # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -march=x86-64-v3 -pipe -fomit-frame-pointer -foptimize-sibling-calls -foptimize-strlen -frerun-cse-after-loop -fstrict-aliasing -fweb -ftree-vrp -ftree-pta -ftree-loop-vectorize -fvect-cost-model -finline-functions -funswitch-loops -flto=auto")
