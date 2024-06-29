@@ -150,7 +150,7 @@ const ZactorWrap &ZmqSend::getZactora()
  * @param {string} &content
  * @return {*}
  */
-std::string ZmqSend::send(const std::string &content)
+std::string ZmqSend::send(const std::string &content) const
 {
     std::string res("-1");
     if (_zacWrap.zact == nullptr)
