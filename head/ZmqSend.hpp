@@ -183,7 +183,7 @@ public:
     // void Init();
     static void clientWorker(zsock_t *pipe, void *args);
     const ZactorWrap &getZactora();
-    std::string send(const std::string &content);
+    std::string send(const std::string &content) const;
     void start();
     ~ZmqSend();
 };

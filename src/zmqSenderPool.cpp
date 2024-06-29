@@ -5,6 +5,10 @@ ZmqSenderPool::ZmqSenderPool(std::string_view connectStr)
     _zmqConnectStr = connectStr;
 }
 
+ZmqSenderPool::ZmqSenderPool()
+{
+}
+
 ZmqSenderPool::~ZmqSenderPool()
 {
 }
@@ -40,7 +44,7 @@ bool ZmqSenderPool::create()
     return true;
 }
 
-std::string ZmqSenderPool::send(const std::string &msg)
+std::string ZmqSenderPool::send(const std::string &msg) const
 {
     std::string res("-1");
     if (_num == -1)
@@ -68,4 +72,9 @@ std::string ZmqSenderPool::send(const std::string &msg)
     res = _pool[pos].send(msg);
     _poolMutex[pos].unlock();
     return res;
+}
+
+void ZmqSenderPool::setNetWorkInfo(std::string_view connectStr)
+{
+    _zmqConnectStr = connectStr;
 }

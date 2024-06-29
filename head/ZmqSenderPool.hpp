@@ -15,7 +15,7 @@ class ZmqSenderPool : zSend::NonCopyable
 {
 private:
     std::vector<ZmqSend> _pool;
-    std::vector<std::mutex> _poolMutex;
+    mutable std::vector<std::mutex> _poolMutex;
     std::string _zmqConnectStr;
     int _num = -1;
 
@@ -26,6 +26,13 @@ public:
      * @return {*}
      */
     explicit ZmqSenderPool(std::string_view connectStr);
+
+    /**
+     * @description: Default constructor
+     * @param {string_view} connectStr
+     * @return {*}
+     */
+    explicit ZmqSenderPool();
     /**
      * @description: Set zmq worker threads number
      * @param {int} num
@@ -47,7 +54,13 @@ public:
      * @param {string} &msg
      * @return {string} when occur err,return "-1"
      */
-    std::string send(const std::string &msg);
+    std::string send(const std::string &msg) const;
+    /**
+     * @description: config network infomation.example connectStr:"127.0.0.1:10086"
+     * @param {string_view} connectStr
+     * @return {*}
+     */
+    void setNetWorkInfo(std::string_view connectStr);
     ~ZmqSenderPool();
 };
 
