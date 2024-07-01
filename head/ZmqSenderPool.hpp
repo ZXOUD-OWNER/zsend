@@ -70,11 +70,11 @@ namespace zSend
     {
     private:
         const std::string &_msg;
-        ZmqSenderPool *parent;
+        const ZmqSenderPool *parent;
         std::string result;
 
     public:
-        inline send(ZmqSenderPool *temp, const std::string &msg)
+        inline send(const ZmqSenderPool *temp, const std::string &msg)
             : _msg(msg),
               parent(temp)
         {
