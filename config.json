@@ -1,0 +1,4 @@
+{
+    "httpListenAddress": "10.0.20.3:50040",
+    "zmqPushAddress": "10.0.20.3:10086"
+}
