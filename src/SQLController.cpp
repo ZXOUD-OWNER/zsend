@@ -38,8 +38,10 @@ drogon::Task<void> SqlHandler::handleSql(const drogon::HttpRequestPtr req, std::
     // value["Sql"] = sql;
     co_await ZeroMQ::Send(Json::writeString(writer, parser));
 
-    jsonRes["result"] = "SQL has been sended!";
-    resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, parser["Sql"].asString());
+
+    // jsonRes["result"] = response;
     callback(resp);
     co_return;
 }
@@ -62,14 +64,26 @@ drogon::Task<void> SqlHandler::deleteTable(const drogon::HttpRequestPtr req, std
         resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
         callback(resp);
         LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
-        // std::cout << "req body parse fatal! body is " << body << std::endl;
-        // LOG(ERROR) << "req body parse fatal! body is " << body;
         co_return;
     }
     std::string sqlDe(str);
     sqlDe.append(parser["TableName"].asString());
 
     co_await ZeroMQ::Send(sqlDe);
+
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, sqlDe);
+
+    // if (!reader.parse(response, parser))
+    // {
+    //     jsonRes["result"] = "err!";
+    //     resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    //     callback(resp);
+    //     LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+    //     co_return;
+    // }
+
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
     callback(resp);
     co_return;
 }
@@ -79,12 +93,26 @@ drogon::Task<void> SqlHandler::getAllTableName(const drogon::HttpRequestPtr req,
     std::string body(req->getBody());
     Json::Reader reader;
     Json::Value parser;
+    Json::Value jsonRes;
     drogon::HttpResponsePtr resp;
     Json::StreamWriterBuilder writer;
-    static std::string str = "select * from pg_tables where schemaname = 'public'";
+    static std::string str = "select tablename from pg_tables where schemaname = 'public'";
 
     parser["Sql"] = str;
     co_await ZeroMQ::Send(Json::writeString(writer, parser));
+
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, str);
+    // if (!reader.parse(response, parser))
+    // {
+    //     jsonRes["result"] = "err!";
+    //     resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    //     callback(resp);
+    //     LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+    //     co_return;
+    // }
+
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
     callback(resp);
 }
 
@@ -93,11 +121,26 @@ drogon::Task<void> SqlHandler::getCurrentDataBaseName(const drogon::HttpRequestP
     std::string body(req->getBody());
     Json::Reader reader;
     Json::Value parser;
+    Json::Value jsonRes;
+
     drogon::HttpResponsePtr resp;
     Json::StreamWriterBuilder writer;
-    static std::string str = "SELECT current_database();";
+    static std::string str = "select current_database();";
 
     parser["Sql"] = str;
     co_await ZeroMQ::Send(Json::writeString(writer, parser));
+
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, str);
+    // if (!reader.parse(response, parser))
+    // {
+    //     jsonRes["result"] = "err!";
+    //     resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    //     callback(resp);
+    //     LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+    //     co_return;
+    // }
+
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
     callback(resp);
 }
