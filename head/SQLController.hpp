@@ -3,7 +3,7 @@
  * @copyright (c) HK ZXOUD LIMITED https://www.zxoud.com
  * Author: yushou-cell(email:2354739167@qq.com)
  * create: 20240719
- * FilePath: /drogonSQl/head/SQLController.hpp
+ * FilePath: /zsend/head/SQLController.hpp
  * Description: SQL URL APIs
  */
 #pragma once
@@ -13,7 +13,10 @@ class SqlHandler : public drogon::HttpController<SqlHandler>
 {
 public:
     METHOD_LIST_BEGIN
-    METHOD_ADD(SqlHandler::handleSql, "", drogon::Post);
+    METHOD_ADD(SqlHandler::handleSql, "/handleSql", drogon::Post);
+    METHOD_ADD(SqlHandler::deleteTable, "/DeleteTable", drogon::Post);
+    METHOD_ADD(SqlHandler::getAllTableName, "/GetAllTableName", drogon::Post);
+    METHOD_ADD(SqlHandler::getCurrentDataBaseName, "/GetCurrentDataBaseName", drogon::Post);
 
     METHOD_LIST_END
     /**
@@ -23,4 +26,8 @@ public:
      * @return {*} Coroutine-Specific Objects
      */
     drogon::Task<void> handleSql(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback);
+
+    drogon::Task<void> deleteTable(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback);
+    drogon::Task<void> getAllTableName(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback);
+    drogon::Task<void> getCurrentDataBaseName(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback);
 };

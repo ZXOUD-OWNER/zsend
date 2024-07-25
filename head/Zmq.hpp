@@ -3,7 +3,7 @@
  * @copyright (c) HK ZXOUD LIMITED https://www.zxoud.com
  * Author: yushou-cell(email:2354739167@qq.com)
  * create: 20240719
- * FilePath: /drogonSQl/head/Zmq.hpp
+ * FilePath: /zsend/head/Zmq.hpp
  * Description:Encapsulations and coroutines for ZeroMQ sockets
  */
 #pragma once
@@ -22,7 +22,7 @@ namespace ZeroMQ
         NonCopyable(NonCopyable &&) = delete;            // Disable move constructor
         NonCopyable &operator=(NonCopyable &&) = delete; // Disable move assignment operator
     };
-    class ZmqEncapsulation : ZeroMQ::NonCopyable
+    class ZmqEncapsulation : public ZeroMQ::NonCopyable
     {
     private:
         zactor_t *_execPushThread = nullptr;
@@ -48,7 +48,7 @@ namespace ZeroMQ
          */
         void push(std::string msg);
     };
-    class Send : ZeroMQ::NonCopyable
+    class Send : public ZeroMQ::NonCopyable
     {
     private:
         std::string _msg;

@@ -3,7 +3,7 @@
  * @copyright (c) HK ZXOUD LIMITED https://www.zxoud.com
  * Author: yushou-cell(email:2354739167@qq.com)
  * create: 20240719
- * FilePath: /drogonSQl/src/Zmq.cpp
+ * FilePath: /zsend/src/Zmq.cpp
  * Description:Encapsulations and coroutines for ZeroMQ sockets
  */
 #include "head.hpp"
@@ -17,13 +17,16 @@ namespace ZeroMQ
     {
         zsys_set_io_threads(3);
         zsys_set_max_sockets(zsys_socket_limit());
-        std::filesystem::path p("./config.json");
-        std::ifstream ifs(p, std::ifstream::binary);
-        std::string content((std::istreambuf_iterator<char>(ifs)), {});
 
-        Json::Reader reader;
-        Json::Value value;
-        reader.parse(content, value);
+        drogon::app().loadConfigFile("./drogon_config.json");
+        auto value = drogon::app().getCustomConfig();
+        // std::filesystem::path p("./config.json");
+        // std::ifstream ifs(p, std::ifstream::binary);
+        // std::string content((std::istreambuf_iterator<char>(ifs)), {});
+
+        // Json::Reader reader;
+        // Json::Value value;
+        // reader.parse(content, value);
         _addressStr = value["zmqPushAddress"].asString();
         _execPushThread = zactor_new(ZmqEncapsulation::send, this);
     }

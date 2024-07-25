@@ -3,7 +3,7 @@
  * @copyright (c) HK ZXOUD LIMITED https://www.zxoud.com
  * Author: yushou-cell(email:2354739167@qq.com)
  * create: 20240719
- * FilePath: /drogonSQl/src/SQLController.cpp
+ * FilePath: /zsend/src/SQLController.cpp
  * Description: SQL URL APIs
  */
 #include "head.hpp"
@@ -38,8 +38,111 @@ drogon::Task<void> SqlHandler::handleSql(const drogon::HttpRequestPtr req, std::
     // value["Sql"] = sql;
     co_await ZeroMQ::Send(Json::writeString(writer, parser));
 
-    jsonRes["result"] = "SQL has been sended!";
-    resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, parser["Sql"].asString());
+    // std::cout << Json::writeString(writer, response) << std::endl;
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
+
     callback(resp);
     co_return;
+}
+
+drogon::Task<void> SqlHandler::deleteTable(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback)
+{
+    std::string body(req->getBody());
+    Json::Reader reader;
+    Json::Value parser;
+
+    drogon::HttpResponsePtr resp;
+    Json::Value jsonRes;
+    Json::StreamWriterBuilder writer;
+
+    static std::string str = "drop Table ";
+
+    if (!reader.parse(body, parser))
+    {
+        jsonRes["result"] = "err!";
+        resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+        callback(resp);
+        LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+        co_return;
+    }
+    std::string sqlDe(str);
+    sqlDe.append(parser["TableName"].asString());
+    jsonRes["Sql"] = sqlDe;
+
+    co_await ZeroMQ::Send(Json::writeString(writer, jsonRes));
+
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, sqlDe);
+
+    // if (!reader.parse(response, parser))
+    // {
+    //     jsonRes["result"] = "err!";
+    //     resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    //     callback(resp);
+    //     LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+    //     co_return;
+    // }
+
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
+    callback(resp);
+    co_return;
+}
+
+drogon::Task<void> SqlHandler::getAllTableName(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback)
+{
+    std::string body(req->getBody());
+    Json::Reader reader;
+    Json::Value parser;
+    Json::Value jsonRes;
+    drogon::HttpResponsePtr resp;
+    Json::StreamWriterBuilder writer;
+    static std::string str = "select tablename from pg_tables where schemaname = 'public'";
+
+    parser["Sql"] = str;
+    co_await ZeroMQ::Send(Json::writeString(writer, parser));
+
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, str);
+    // if (!reader.parse(response, parser))
+    // {
+    //     jsonRes["result"] = "err!";
+    //     resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    //     callback(resp);
+    //     LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+    //     co_return;
+    // }
+
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
+    callback(resp);
+}
+
+drogon::Task<void> SqlHandler::getCurrentDataBaseName(const drogon::HttpRequestPtr req, std::function<void(const drogon::HttpResponsePtr &)> callback)
+{
+    std::string body(req->getBody());
+    Json::Reader reader;
+    Json::Value parser;
+    Json::Value jsonRes;
+
+    drogon::HttpResponsePtr resp;
+    Json::StreamWriterBuilder writer;
+    static std::string str = "select current_database();";
+
+    parser["Sql"] = str;
+    co_await ZeroMQ::Send(Json::writeString(writer, parser));
+
+    Json::Value response;
+    co_await CUtil::getZmqResponse(response, str);
+    // if (!reader.parse(response, parser))
+    // {
+    //     jsonRes["result"] = "err!";
+    //     resp = drogon::HttpResponse::newHttpJsonResponse(jsonRes);
+    //     callback(resp);
+    //     LOG(ERROR) << "req body parse fatal! body is " << body << std::endl;
+    //     co_return;
+    // }
+
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
+    callback(resp);
 }
