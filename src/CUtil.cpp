@@ -54,6 +54,7 @@ drogon::Task<void> CUtil::getZmqResponse(Json::Value &response, std::string_view
     try
     {
         static int64_t timeout = 2000;
+        Json::Reader reader;
 
         bool flag = false;
         auto redisClient = drogon::app().getRedisClient("keyDB");
@@ -94,6 +95,33 @@ drogon::Task<void> CUtil::getZmqResponse(Json::Value &response, std::string_view
                 {
                     res2 = co_await redisClient->execCommandCoro("DEL %b", key.data(), key.length());
                     LOG(INFO) << "redis DEL str:" << key.data();
+                }
+
+                Json::Value tempParse;
+                if (key.find("select") != std::string::npos || key.find("SELECT") != std::string::npos)
+                {
+                    // std::cout << response["result"].asString() << std::endl;
+                    if (!reader.parse(response["result"].asString(), tempParse))
+                    {
+                        if (response["result"].asString() == "0")
+                        {
+                            /* code */
+                        }
+                        else
+                        {
+                            response["err"] = response["result"];
+                            response["result"] = "0";
+                        }
+                    }
+                }
+                else
+                {
+
+                    if (response["result"].asString() != "1")
+                    {
+                        response["err"] = response["result"];
+                        response["result"] = "0";
+                    }
                 }
 
                 co_return;

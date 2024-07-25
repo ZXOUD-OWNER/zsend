@@ -40,8 +40,9 @@ drogon::Task<void> SqlHandler::handleSql(const drogon::HttpRequestPtr req, std::
 
     Json::Value response;
     co_await CUtil::getZmqResponse(response, parser["Sql"].asString());
+    // std::cout << Json::writeString(writer, response) << std::endl;
+    resp = drogon::HttpResponse::newHttpJsonResponse(response);
 
-    // jsonRes["result"] = response;
     callback(resp);
     co_return;
 }
@@ -68,8 +69,9 @@ drogon::Task<void> SqlHandler::deleteTable(const drogon::HttpRequestPtr req, std
     }
     std::string sqlDe(str);
     sqlDe.append(parser["TableName"].asString());
+    jsonRes["Sql"] = sqlDe;
 
-    co_await ZeroMQ::Send(sqlDe);
+    co_await ZeroMQ::Send(Json::writeString(writer, jsonRes));
 
     Json::Value response;
     co_await CUtil::getZmqResponse(response, sqlDe);

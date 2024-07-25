@@ -26,7 +26,9 @@ int main(int argc, char **argv)
     auto nthread = std::thread::hardware_concurrency();
     nthread = nthread / 2;
     tbb::global_control control(tbb::global_control::max_allowed_parallelism, nthread);
-    drogon::app().setThreadNum(16);
+
+    // Our tests have shown that Drogon's concurrency hits a ceiling with approximately 10 threads. For a straightforward gateway that only forwards and parses requests, 12 threads should be adequate.
+    drogon::app().setThreadNum(12);
     // drogon::app().loadConfigFile("./av1.json");
     // drogon::app().enableSession(1200);
     // drogon::app().registerFilter(std::make_shared<LoginCheckFilterNo>());
